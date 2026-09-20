@@ -1,0 +1,156 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout game
+        uses: actions/checkout@v7
+
+      - name: Checkout lupi-codec
+        uses: actions/checkout@v7
+        with:
+          repository: humbertodias/lupi-codec
+          ref: macos
+          path: .lupi-build/lupi-codec
+
+      - name: Checkout lupinho
+        uses: actions/checkout@v7
+        with:
+          repository: humbertodias/lupinho
+          ref: macos_with_sound
+          path: .lupi-build/lupinho
+          submodules: true
+
+      - name: Encode game
+        run: |
+          set -euo pipefail
+          make stage \
+            CODEC="$GITHUB_WORKSPACE/.lupi-build/lupi-codec" \
+            OUT="$GITHUB_WORKSPACE/.lupi-build"
+          docker build -f "$GITHUB_WORKSPACE/.lupi-build/lupinho/Dockerfile.linux" \
+            -t lupinho-linux \
+            "$GITHUB_WORKSPACE/.lupi-build/lupinho"
+          rm -rf "$GITHUB_WORKSPACE/.lupi-build/codec"
+          mkdir -p "$GITHUB_WORKSPACE/.lupi-build/codec"
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/.lupi-build/src:/src:ro" \
+            -v "$GITHUB_WORKSPACE/.lupi-build/codec:/out" \
+            -v "$GITHUB_WORKSPACE/.lupi-build/lupi-codec:/codec:ro" \
+            lupinho-linux \
+            bash -lc 'set -euo pipefail
+              apt-get update && apt-get install -y --no-install-recommends imagemagick
+              if ! command -v magick >/dev/null; then
+                ln -sf "$(command -v convert)" /usr/local/bin/magick
+              fi
+              cd /codec
+              /lupinho/src/libs/linux/lua/src/lua -v
+              /lupinho/src/libs/linux/lua/src/lua run.lua /src /out'
+
+      - name: Package .lupi
+        run: |
+          set -euo pipefail
+          latest="$(ls -t .lupi-build/codec/releases | head -1)"
+          test -n "$latest"
+          (cd ".lupi-build/codec/releases/$latest" && zip -r "$GITHUB_WORKSPACE/.lupi-build/jogo.lupi" .)
+
+      - name: Build webgame
+        run: |
+          set -euo pipefail
+          docker build -f Dockerfile.wasm -t lupinho-wasm .
+          mkdir -p "$GITHUB_WORKSPACE/.lupi-build/webgame"
+          docker run --rm --user root \
+            -v "$GITHUB_WORKSPACE/.lupi-build/jogo.lupi:/game.lupi:ro" \
+            -v "$GITHUB_WORKSPACE/.lupi-build/webgame:/out" \
+            lupinho-wasm \
+            bash -lc 'set -euo pipefail
+              command -v unzip || (apt-get update && apt-get install -y --no-install-recommends unzip)
+              command -v emcc
+              make -C /work/src web-game GAME_PATH=/game.lupi
+              cp -a /work/dist/webgame/. /out/'
+        working-directory: .lupi-build/lupinho
+
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp -a .lupi-build/webgame/. _site/
+          echo "html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+          }
+
+          body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          #output {
+            display: none !important;
+          }
+
+          canvas.emscripten {
+            border: 0;
+            background: #000;
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: min(100vw, calc(100vh * 480 / 270)) !important;
+            height: min(100vh, calc(100vw * 270 / 480)) !important;
+            max-width: 100vw;
+            max-height: 100vh;
+          }
+
+          @supports (height: 100dvh) {
+            canvas.emscripten {
+              width: min(100dvw, calc(100dvh * 480 / 270)) !important;
+              height: min(100dvh, calc(100dvw * 270 / 480)) !important;
+              max-width: 100dvw;
+              max-height: 100dvh;
+            }
+          }" > _site/fullscreen.css
+          sed -i 's|</head>|<link rel="stylesheet" href="fullscreen.css"></head>|' _site/game.html
+          cp _site/game.html _site/index.html
+          touch _site/.nojekyll
+          test -s _site/index.html
+          test -s _site/fullscreen.css
+          test -s _site/game.js
+          test -s _site/game.wasm
+          test -s _site/game.data
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
