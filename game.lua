@@ -1,19 +1,22 @@
 -- Controller Test Cassette para Lupi
 -- Super Famicom em primitivas: capsula larga, cavidades, cruz arredondada.
 
-pcall(function() require("palette") end)
-
 local function rgb555(r, g, b)
   return r + (g * 32) + (b * 1024)
 end
 
-if not Palette then
-  Palette = {
-    rgb555(0, 0, 0), rgb555(0, 0, 0), rgb555(4, 4, 5), rgb555(24, 24, 25),
-    rgb555(28, 28, 29), rgb555(19, 19, 20), rgb555(13, 13, 14), rgb555(10, 10, 11),
-    rgb555(8, 25, 28), rgb555(6, 22, 8), rgb555(4, 8, 28), rgb555(28, 5, 5),
-    rgb555(28, 25, 5), rgb555(8, 8, 9), rgb555(9, 9, 10), rgb555(31, 31, 31),
-  }
+-- Cassete sem PNG: o lupi-codec apaga palette.lua e gera so o sentinel 0x0000.
+-- Sem fallback, ui.cls e as primitivas pintam tudo de preto (tela preta no WASM).
+local DEFAULT_PALETTE = {
+  rgb555(0, 0, 0), rgb555(0, 0, 0), rgb555(4, 4, 5), rgb555(24, 24, 25),
+  rgb555(28, 28, 29), rgb555(19, 19, 20), rgb555(13, 13, 14), rgb555(10, 10, 11),
+  rgb555(8, 25, 28), rgb555(6, 22, 8), rgb555(4, 8, 28), rgb555(28, 5, 5),
+  rgb555(28, 25, 5), rgb555(8, 8, 9), rgb555(9, 9, 10), rgb555(31, 31, 31),
+}
+
+pcall(function() require("palette") end)
+if type(Palette) ~= "table" or #Palette < 16 then
+  Palette = DEFAULT_PALETTE
 end
 
 local function btn_id(name, fallback)
@@ -66,6 +69,7 @@ local FONT = {
   E = { "11111", "10000", "10000", "11110", "10000", "10000", "11111" },
   F = { "11111", "10000", "10000", "11110", "10000", "10000", "10000" },
   I = { "01110", "00100", "00100", "00100", "00100", "00100", "01110" },
+  L = { "10000", "10000", "10000", "10000", "10000", "10000", "11111" },
   M = { "10001", "11011", "10101", "10101", "10001", "10001", "10001" },
   N = { "10001", "11001", "10101", "10011", "10001", "10001", "10001" },
   O = { "01110", "10001", "10001", "10001", "10001", "10001", "01110" },
@@ -171,7 +175,7 @@ end
 
 local function draw_logo()
   local s = 4
-  local super, fami = "SUPER", "FAMICOM"
+  local super, fami = "LUPI", "CONSOLE"
   local x = math.floor((480 - text_w(super, s)) / 2)
   local cols = { 11, 9, 12, 10, 12 }
   for i = 1, #super do
@@ -185,7 +189,7 @@ local function draw_logo()
 end
 
 local function draw_controller(st)
-  local cx, cy = 240, 162
+  local cx, cy = 240, 150
   local w, h = 304, 126
   local r = math.floor(h / 2)
   local lx = cx - math.floor(w / 2) + r
@@ -202,8 +206,7 @@ local function draw_controller(st)
   shoulder_bar(lx - r + 22, top, lx + 20, top + sh, st.l and 4 or 5)
   shoulder_bar(rx - 20, top, rx + r - 22, top + sh, st.r and 4 or 5)
 
-  ui.print("Nintendo", cx - 28, cy - 38, 13)
-  ui.print("SUPER LUPINHO", cx - 40, cy - 28, 13)
+  ui.print("SUPER LUPINHO", cx - 38, cy - 38, 13)
 
   -- D-pad
   local dx, dy = lx - 4, cy + 8
@@ -275,5 +278,5 @@ function update(frame)
 
   local label = "TIME=" .. string.format("%02d", seconds % 100)
   text_big(label, math.floor((480 - text_w(label, 3)) / 2), 236, 3, 15)
-  ui.print("NINTENDO", 408, 252, 15)
+
 end

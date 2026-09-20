@@ -26,7 +26,7 @@ jobs:
         with:
           repository: humbertodias/lupi-codec
           ref: macos
-          path: .lupi-build/lupi-codec
+          path: .lupi-build/codec
 
       - name: Checkout lupinho
         uses: actions/checkout@v7
@@ -39,34 +39,11 @@ jobs:
       - name: Encode game
         run: |
           set -euo pipefail
-          make stage \
-            CODEC="$GITHUB_WORKSPACE/.lupi-build/lupi-codec" \
+          make -C "$GITHUB_WORKSPACE/.lupi-build/lupinho/src/libs/lua"
+          make lupi \
+            LUA="$GITHUB_WORKSPACE/.lupi-build/lupinho/src/libs/lua/lua" \
+            CODEC="$GITHUB_WORKSPACE/.lupi-build/codec" \
             OUT="$GITHUB_WORKSPACE/.lupi-build"
-          docker build -f "$GITHUB_WORKSPACE/.lupi-build/lupinho/Dockerfile.linux" \
-            -t lupinho-linux \
-            "$GITHUB_WORKSPACE/.lupi-build/lupinho"
-          rm -rf "$GITHUB_WORKSPACE/.lupi-build/codec"
-          mkdir -p "$GITHUB_WORKSPACE/.lupi-build/codec"
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE/.lupi-build/src:/src:ro" \
-            -v "$GITHUB_WORKSPACE/.lupi-build/codec:/out" \
-            -v "$GITHUB_WORKSPACE/.lupi-build/lupi-codec:/codec:ro" \
-            lupinho-linux \
-            bash -lc 'set -euo pipefail
-              apt-get update && apt-get install -y --no-install-recommends imagemagick
-              if ! command -v magick >/dev/null; then
-                ln -sf "$(command -v convert)" /usr/local/bin/magick
-              fi
-              cd /codec
-              /lupinho/src/libs/linux/lua/src/lua -v
-              /lupinho/src/libs/linux/lua/src/lua run.lua /src /out'
-
-      - name: Package .lupi
-        run: |
-          set -euo pipefail
-          latest="$(ls -t .lupi-build/codec/releases | head -1)"
-          test -n "$latest"
-          (cd ".lupi-build/codec/releases/$latest" && zip -r "$GITHUB_WORKSPACE/.lupi-build/jogo.lupi" .)
 
       - name: Build webgame
         run: |
