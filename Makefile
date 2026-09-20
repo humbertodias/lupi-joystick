@@ -24,6 +24,7 @@ stage:
 	@test ! -f "$(CURDIR)/palette.lua" || cp -f "$(CURDIR)/palette.lua" "$(STAGE)/"
 	@test ! -f "$(CURDIR)/lupi_manifest.txt" || cp -f "$(CURDIR)/lupi_manifest.txt" "$(STAGE)/"
 	@test ! -f "$(CURDIR)/lupi.yaml" || cp -f "$(CURDIR)/lupi.yaml" "$(STAGE)/"
+	@test ! -d "$(CURDIR)/snd" || cp -a "$(CURDIR)/snd" "$(STAGE)/snd"
 
 codec: stage
 	@command -v $(LUA) >/dev/null || { echo "lua nao encontrado"; exit 1; }
@@ -31,6 +32,7 @@ codec: stage
 	cd "$(CODEC)" && $(LUA) run.lua "$(STAGE)" "$(CODEC)"
 	@test -f "$(CURRENT)/palette.lua" || { echo "release vazio em $(CURRENT)"; exit 1; }
 	cp -f "$(CURDIR)/palette.lua" "$(CURRENT)/palette.lua"
+	@test ! -d "$(CURDIR)/snd" || { rm -rf "$(CURRENT)/snd"; cp -a "$(CURDIR)/snd" "$(CURRENT)/snd"; }
 
 lupi: codec
 	@command -v zip >/dev/null || { echo "zip nao encontrado"; exit 1; }

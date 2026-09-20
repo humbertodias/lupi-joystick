@@ -251,6 +251,45 @@ local function draw_controller(st)
 end
 
 local start_frame = nil
+local SND = "snd/01-Button-Testing"
+local sound_on = false
+
+local KEY_NAME = {
+  up = "W", down = "S", left = "A", right = "D",
+  y = "M", b = "K", a = "J", x = "L", l = "G", r = "H",
+}
+
+local KEY_ORDER = { "up", "down", "left", "right", "y", "b", "a", "x", "l", "r" }
+
+local function pressed_keys(st)
+  local keys = {}
+  for i = 1, #KEY_ORDER do
+    local name = KEY_ORDER[i]
+    if st[name] then
+      keys[#keys + 1] = KEY_NAME[name]
+    end
+  end
+  if #keys == 0 then return "KEY: -" end
+  return "KEY: " .. table.concat(keys, " ")
+end
+
+local function any_held(st)
+  for _, v in pairs(st) do
+    if v then return true end
+  end
+  return false
+end
+
+local function set_hold_sound(on)
+  if on == sound_on then return end
+  sound_on = on
+  if not (sfx and sfx.music) then return end
+  if on then
+    sfx.music(SND)
+  else
+    sfx.music(-1)
+  end
+end
 
 function update(frame)
   apply_palette()
@@ -272,11 +311,15 @@ function update(frame)
   local seconds = math.floor(((frame or 0) - start_frame) / 60)
   if seconds < 0 then seconds = 0 end
 
+  set_hold_sound(any_held(st))
+
   ui.cls(1)
   draw_logo()
   draw_controller(st)
 
   local label = "TIME=" .. string.format("%02d", seconds % 100)
   text_big(label, math.floor((480 - text_w(label, 3)) / 2), 236, 3, 15)
+  local keys = pressed_keys(st)
+  ui.print(keys, math.floor((480 - #keys * 4) / 2), 222, 15)
 
 end
