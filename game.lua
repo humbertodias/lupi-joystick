@@ -241,8 +241,8 @@ local function draw_controller(st)
   end
 
   face(fx, fy - 16, 10, 10, st.x, "X", fx + 12, fy - 28)
-  face(fx + 16, fy, 11, 11, st.a, "A", fx + 26, fy - 6)
-  face(fx, fy + 16, 12, 12, st.b, "B", fx + 12, fy + 22)
+  face(fx + 16, fy, 11, 11, st.a, "A", fx + 26, fy - 16)
+  face(fx, fy + 16, 12, 12, st.b, "B", fx - 16, fy + 22)
   face(fx - 16, fy, 9, 9, st.y, "Y", fx - 28, fy + 10)
   if st.x then ui.circfill(fx, fy - 16, 4, 15) end
   if st.a then ui.circfill(fx + 16, fy, 4, 15) end
