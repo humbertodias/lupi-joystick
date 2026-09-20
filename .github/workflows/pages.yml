@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -44,6 +44,16 @@ jobs:
             LUA="$GITHUB_WORKSPACE/.lupi-build/lupinho/src/libs/lua/lua" \
             CODEC="$GITHUB_WORKSPACE/.lupi-build/codec" \
             OUT="$GITHUB_WORKSPACE/.lupi-build"
+          test -s .lupi-build/jogo.lupi
+          cp -f .lupi-build/jogo.lupi lupi-joystick.lupi
+
+      - name: Release .lupi
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: lupi-joystick
+          files: lupi-joystick.lupi
+          make_latest: true
 
       - name: Build webgame
         run: |
