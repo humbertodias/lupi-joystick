@@ -13,3 +13,19 @@ lupinho lupi-joystick.lupi
 ```
 <img width="480" height="303" alt="image" src="https://github.com/user-attachments/assets/cb533558-2184-4b36-a6b1-fe16b37a19ed" />
 
+### Mapping
+
+| SNES  | Constant  | Keyboard |
+|-------|-----------|----------|
+| Left  | `LEFT`    | A |
+| Right | `RIGHT`   | D |
+| Up    | `UP`      | W |
+| Down  | `DOWN`    | S |
+| B     | `BTN_Z`   | K |
+| X     | `BTN_X`   | J |
+| Y     | `BTN_F`   | G |
+| A     | `BTN_G`   | H |
+| L     | `BTN_Q`   | L |
+| R     | `BTN_E`   | M |
+
+Reference https://lupi.api.br/docs/system.html
