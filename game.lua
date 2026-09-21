@@ -25,29 +25,19 @@ local function btn_id(name, fallback)
   return fallback
 end
 
--- Lupi (docs): Z/X face, F/G extras, Q/E ombros.
--- No Lupinho BTN_X não existe e o fallback 5 é o mesmo id de BTN_Q,
--- então A e L acendiam juntos. Se colidir, usa layout Raylib.
-local Z = btn_id("BTN_Z", 4)
-local X = rawget(_G, "BTN_X")
-local F = btn_id("BTN_F", 12)
-local G = btn_id("BTN_G", 13)
-local Q = btn_id("BTN_Q", 14)
-local E = btn_id("BTN_E", 15)
-local A = X or 5
-local lupinho = (A == Q) or (X == nil and Q == 5)
-
+-- Docs Lupi: LEFT=0 RIGHT=1 UP=2 DOWN=3
+-- BTN_Z=4 (B)  BTN_X=5 (X)  BTN_F=12 (Y)  BTN_G=13 (A)  BTN_Q=14 (L)  BTN_E=15 (R)
 local B = {
   left  = btn_id("LEFT", 0),
   right = btn_id("RIGHT", 1),
   up    = btn_id("UP", 2),
   down  = btn_id("DOWN", 3),
-  y     = lupinho and E or F,
-  b     = Z,
-  a     = lupinho and 6 or A,
-  x     = lupinho and Q or G,
-  l     = lupinho and F or Q,
-  r     = lupinho and G or E,
+  b     = btn_id("BTN_Z", 4),
+  x     = btn_id("BTN_X", 5),
+  y     = btn_id("BTN_F", 12),
+  a     = btn_id("BTN_G", 13),
+  l     = btn_id("BTN_Q", 14),
+  r     = btn_id("BTN_E", 15),
 }
 
 local P = 0
@@ -255,8 +245,8 @@ local SND = "snd/01-Button-Testing"
 local sound_on = false
 
 local KEY_NAME = {
-  up = "W", down = "S", left = "A", right = "D",
-  y = "M", b = "K", a = "J", x = "L", l = "G", r = "H",
+  up = "UP", down = "DOWN", left = "LEFT", right = "RIGHT",
+  b = "BTN_Z", x = "BTN_X", y = "BTN_F", a = "BTN_G", l = "BTN_Q", r = "BTN_E",
 }
 
 local KEY_ORDER = { "up", "down", "left", "right", "y", "b", "a", "x", "l", "r" }
