@@ -6,11 +6,15 @@ Based on [controller-test-cartridge-1990-snes](https://downloads.khinsider.com/g
 - Play in the browser: [humbertodias.github.io/lupi-joystick](https://humbertodias.github.io/lupi-joystick/)
 - Cassette: [lupi-joystick.lupi](https://github.com/humbertodias/lupi-joystick/releases/latest/download/lupi-joystick.lupi)
 
-### How to run
+### How to build/run
 
-```shell
-lupinho lupi-joystick.lupi
+```sh
+git clone --recurse-submodules https://github.com/humbertodias/lupi-joystick
+cd lupi-joystick
+make docker/lupi
+lupinho .build/jogo.lupi
 ```
+
 <img width="480" height="303" alt="image" src="https://github.com/user-attachments/assets/cb533558-2184-4b36-a6b1-fe16b37a19ed" />
 
 ### Mapping
