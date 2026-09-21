@@ -126,19 +126,19 @@ local function slash_pill(x, y, len, rad, color)
   end
 end
 
--- Braco da cruz com ponta redonda.
+-- Braco da cruz com ponta redonda. Nao invade o cubo do centro.
 local function plus_arm(cx, cy, dir, arm, th, color)
   if dir == "up" then
-    ui.rectfill(cx - th, cy - arm, cx + th, cy + th, color)
+    ui.rectfill(cx - th, cy - arm, cx + th, cy - th, color)
     ui.circfill(cx, cy - arm, th, color)
   elseif dir == "down" then
-    ui.rectfill(cx - th, cy - th, cx + th, cy + arm, color)
+    ui.rectfill(cx - th, cy + th, cx + th, cy + arm, color)
     ui.circfill(cx, cy + arm, th, color)
   elseif dir == "left" then
-    ui.rectfill(cx - arm, cy - th, cx + th, cy + th, color)
+    ui.rectfill(cx - arm, cy - th, cx - th, cy + th, color)
     ui.circfill(cx - arm, cy, th, color)
   else
-    ui.rectfill(cx - th, cy - th, cx + arm, cy + th, color)
+    ui.rectfill(cx + th, cy - th, cx + arm, cy + th, color)
     ui.circfill(cx + arm, cy, th, color)
   end
 end
