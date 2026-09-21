@@ -67,8 +67,8 @@ jobs:
             bash -lc 'set -euo pipefail
               command -v unzip || (apt-get update && apt-get install -y --no-install-recommends unzip)
               command -v emcc
-              make -C /work/src web-game GAME_PATH=/game.lupi
-              cp -a /work/dist/webgame/. /out/'
+              make -C /lupinho/src web-game GAME_PATH=/game.lupi
+              cp -a /lupinho/dist/webgame/. /out/'
         working-directory: .lupi-build/lupinho
 
       - name: Assemble site
