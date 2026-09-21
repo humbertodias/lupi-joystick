@@ -1,5 +1,5 @@
 LUA        ?= lua
-CODEC      ?= $(abspath $(CURDIR)/../../lupi-codec)
+CODEC      ?= $(abspath $(CURDIR)/lupi-codec)
 OUT        ?= $(CURDIR)/.build
 STAGE      := $(OUT)/src
 CURRENT    := $(CODEC)/current
@@ -49,3 +49,6 @@ install: codec
 
 clean:
 	rm -rf "$(OUT)"
+
+docker/lupi:
+	docker run -it --platform linux/amd64 -v `pwd`:/src -w /src hldtux/lupinho-macos bash -ic 'make lupi'

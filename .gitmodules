@@ -1,0 +1,3 @@
+[submodule "lupi-codec"]
+	path = lupi-codec
+	url = https://github.com/humbertodias/lupi-codec
